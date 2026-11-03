@@ -18,7 +18,7 @@ arguments
         mustBeLessThanOrEqual(Temperature,370)}
     end
 
-a = 5.2414 * 10^-5; %Nsm^-2
+a = 2.2414 * 10^-5; %Nsm^-2
 b = 247.8; %K
 c = 140; %K
 meu = a * 10^(b/(Temperature-c));
