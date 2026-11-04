@@ -2,7 +2,8 @@ function u_gRequired = GassingRate_Required(Temperature, Oxygen_Concentrationmin
 %Input:K mgL^-1, Growth.Yx_o = mgmg^-1 Growth.meu = d^-1 Growth.X = mgL^-1, m^3,m^3d^-1,K Output:d^-1
 %This formula calculates the Gassing rate required off of the minimum KLA
 %requirement set by a minimum oxygen concentration for cell growth for that
-%day or state.
+%day or state. This assumes that there is no surface area mass transfer as
+%a note.
 theta = correlations.HydraulicResidenceTime(Feed_Volumetric_Flowrate, Volume);
 
 % Calculate minimum oxygen saturation concentration
