@@ -29,14 +29,26 @@ Growth.Ks = 1750;       % mg/L
 Growth.Yx_s = 0.55;     % mg/mg
 Growth.Yx_o = 0.7;      % mg/mg
 
+%Initial Temperatures for P0 calculation
+Temperature_initial = correlations.SeasonalTemperature(0);
+P0_initial = membrane.p0Darcy; %An initial value of P0 was used for the initial conditions of the startup this makes it so that it looks at membrane operation 
+% of a newly inputed MBR in a sense
+
 %Initial Conditions
-State0 = [50,600]; %[Initial biomass conc mgL^-1, CODinitial mgL^-1]
+State0 = [50,600,3,P0_initial]; %[Initial biomass conc mgL^-1, CODinitial mgL^-1,Initial Dissolved Oxygen Conc mgL^-1,Initial Transmembrane pressure Pa ]
 
 %Time Span
 Timespan = [0 365];
 
+%Initial Parameters picked assumed to be 1 reactor for now
+Critical_Membrane_Flux = 
+Volume = 
+Feed_VolumetricFlowrate = 
+n_MembraneUnits = 10;
+Membrane_Area = 450 * n_MembraneUnits;
+
 %Solving the coupled ODEs for Biomass and Substrate concentration
-[Time,State] = ode45(@(Time,State) MBR_ODE_SEASONAL_TEMPERATURE_BIOMASSANDSUBSTRATE(Time, State,Growth, Membrane_Area, Critical_Membrane_Flux, Volume, Feed_VolumetricFlowrate)...
+[Time,State] = ode45(@(Time,State) MBR_ODE_SEASONAL_TEMPERATURE_BIOMASSANDSUBSTRATE(Time, State,Growth, Membrane_Area, Critical_Membrane_Flux, Volume, Feed_VolumetricFlowrate,Gassing_Rate)...
                     , Timespan, State0);
 
 X = State(:,1);

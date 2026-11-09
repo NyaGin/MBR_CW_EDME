@@ -7,7 +7,7 @@ function meu = purewaterViscosity(Temperature)
 % https://studylib.net/doc/29014226/yunus-cengel-fluid-mechanics (Accessed:
 % 3 November 2026): p53
 %For liquids, the viscosity is approximated as
-% Liquids: m 5 a10 b/(T 2c) (2–37)
+% Liquids: Viscosity = a * 10^(b/(Temperature-c))
 % where again T is absolute temperature and a, b, and c are experimentally
 % determined constants. For water, using the values a = 2.414 * 10^-5 Ns/m^2,
 % b = 247.8 K, and c = 140 K results in less than 2.5 percent error in viscosity
