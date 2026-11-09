@@ -1,4 +1,4 @@
-function dstatedt = MBR_ODE_SEASONAL_TEMPERATURE_BIOMASSANDSUBSTRATE(time, state, Growth, Membrane_Area, Critical_Membrane_Flux, Volume, Feed_VolumetricFlowrate)
+function dstatedt = MBR_ODE_SEASONAL_TEMPERATURE_BIOMASSANDSUBSTRATE(time, State, Growth, Membrane_Area, Critical_Membrane_Flux, Volume, Feed_VolumetricFlowrate)
 % =========================================================================
 % GROWTH PARAMETERS - INPUT UNITS
 % =========================================================================
@@ -26,9 +26,10 @@ function dstatedt = MBR_ODE_SEASONAL_TEMPERATURE_BIOMASSANDSUBSTRATE(time, state
 % =========================================================================
 
 %State establishment:
-X = state(1);
-S = state(2);
-
+X = State(1);
+S = State(2);
+O = State(3);
+P = State(4);
 
 
 %Disruptions in feed - between the months of october and january the COD
@@ -69,6 +70,12 @@ theta = correlations.HydraulicResidenceTime(Feed_VolumetricFlowrate_t,Volume);
 %Xw = X for the ODE involving dX/dt = meuX - Qw/V *Xw
 dXdt = X * (meu - (Qw/Volume));
 dSdt = (1/theta)*(Sf-S) - (meu*X)/Growth.Yx_s;
+
+%Dissolved Oxygen Transient
+
+%Transmembrane pressure requirement Transient
+
+
 
 dstatedt = [dXdt; dSdt;];
 

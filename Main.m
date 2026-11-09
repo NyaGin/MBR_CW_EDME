@@ -1,10 +1,24 @@
-%Notes The MBR is assumed to operate at a constant liquid volume maintained by an ideal level-control system,
-% with permeate withdrawal regulated to balance the feed and sludge-wasting flows.
-%  The selected operating volume includes an allowance above the minimum required process volume.
-%  Consequently, liquid-level control dynamics are excluded from the process model,
-%  while the effect of the selected working volume is retained in the governing mass balances.
-%Assumed ideal control for the models with V = Vsetpoint Qp = Qf-Qw and
-%O>=Omin.
+% =========================================================================
+% MODEL ASSUMPTIONS
+% =========================================================================
+% The MBR operates at constant liquid volume, maintained by ideal level
+% control.
+%
+% The membrane operates at constant critical flux, maintained by ideal
+% transmembrane pressure control.
+%
+% Permeate flowrate is therefore determined by membrane area and flux:
+% Qp = Jcrit * A
+%
+% Sludge wasting is adjusted to satisfy the constant-volume balance:
+% Qw = Qf - Qp
+%
+% The selected operating volume includes an allowance above the minimum
+% required process volume.
+%
+% Level-control dynamics are neglected.
+% =========================================================================
+% and O>=Omin.
 
 
 
@@ -16,4 +30,21 @@ Growth.Yx_s = 0.55;     % mg/mg
 Growth.Yx_o = 0.7;      % mg/mg
 
 %Initial Conditions
-state0 = [50,600]; %[Initial biomass conc mgL^-1, CODinitial mgL^-1]
+State0 = [50,600]; %[Initial biomass conc mgL^-1, CODinitial mgL^-1]
+
+%Time Span
+Timespan = [0 365];
+
+%Solving the coupled ODEs for Biomass and Substrate concentration
+[Time,State] = ode45(@(Time,State) MBR_ODE_SEASONAL_TEMPERATURE_BIOMASSANDSUBSTRATE(Time, State,Growth, Membrane_Area, Critical_Membrane_Flux, Volume, Feed_VolumetricFlowrate)...
+                    , Timespan, State0);
+
+X = State(:,1);
+S = State(:,2);
+
+%plotting
+
+%oxygen
+
+%membrane TMP
+
