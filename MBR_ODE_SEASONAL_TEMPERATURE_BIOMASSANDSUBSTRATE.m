@@ -1,28 +1,78 @@
 function dstatedt = MBR_ODE_SEASONAL_TEMPERATURE_BIOMASSANDSUBSTRATE(time, State, Growth, Membrane_Area, Critical_Membrane_Flux, Volume, Feed_VolumetricFlowrate,Gassing_Rate)
-% =========================================================================
-% GROWTH PARAMETERS - INPUT UNITS
-% =========================================================================
-% Parameter                                   Symbol       Unit
-% -------------------------------------------------------------------------
-% Maximum specific biomass growth rate        meu_max      d^-1
-% Actual specific biomass growth rate         meu          d^-1
-% Endogenous biomass decay rate               kd           d^-1
-% Substrate affinity constant (COD)           Ks           mg COD/L
-% Biomass concentration                       X            mg biomass/L
-% Substrate concentration (COD)               S            mg COD/L
-% Stoichiometric yield coefficient (COD)      Yx_s         mg biomass/mg COD
-% Stoichiometric yield coefficient (Oxygen)   Yx_o         mg biomass/mg O2
-% =========================================================================
-% Additional inputs:
-% Critical_Membrane_Flux    m^3 m^-2 d^-1
-% Membrane_Area             m^2
-% Volume                    m^3
-% Feed_VolumetricFlowrate   m^3 d^-1
-%
-% Outputs:
-% dXdt                      mg biomass L^-1 d^-1
-% dSdt                      mg COD L^-1 d^-1
 
+% =========================================================================
+% MBR DYNAMIC MODEL - PARAMETERS AND UNITS
+% =========================================================================
+%
+% INPUT PARAMETERS
+% -------------------------------------------------------------------------
+% Parameter                              Symbol       Unit
+% -------------------------------------------------------------------------
+% Simulation time                        t            d
+% Maximum specific growth rate           meu_max      d^-1
+% Endogenous biomass decay rate          kd           d^-1
+% Substrate affinity constant            Ks           mg COD/L
+% Biomass/substrate yield coefficient    Yx_s         mg biomass/mg COD
+% Biomass/oxygen yield coefficient       Yx_o         mg biomass/mg O2
+% Critical membrane flux                 Jcrit        m/s
+% Membrane area                          A            m^2
+% Reactor volume                         V            m^3
+% Feed volumetric flow rate              Qf           m^3/d
+% Superficial gassing velocity           ug           m/s
+%
+% STATE VARIABLES
+% -------------------------------------------------------------------------
+% State(1) - Biomass concentration        X            mg biomass/L
+% State(2) - Substrate concentration      S            mg COD/L
+% State(3) - Dissolved oxygen             O            mg O2/L
+% State(4) - Transmembrane pressure       P            Pa
+%
+% ALGEBRAIC VARIABLES
+% -------------------------------------------------------------------------
+% Net specific biomass growth rate       meu          d^-1
+% Seasonal temperature                   T            K
+% Oxygen saturation concentration        O_star       mg O2/L
+% Volumetric oxygen transfer coefficient KLA          d^-1
+% Hydraulic residence time               theta        d
+% Permeate volumetric flow rate          Qp           m^3/d
+% Sludge wasting flow rate               Qw           m^3/d
+% Pure water dynamic viscosity           eta          Pa s
+% Clean membrane pressure                P0           Pa
+%
+% OUTPUTS
+% -------------------------------------------------------------------------
+% dstatedt(1) - Biomass rate              dXdt         mg biomass/L/d
+% dstatedt(2) - Substrate rate            dSdt         mg COD/L/d
+% dstatedt(3) - Dissolved oxygen rate     dOdt         mg O2/L/d
+% dstatedt(4) - TMP rate                  dPdt         Pa/d
+%
+% UNIT CONVERSIONS
+% -------------------------------------------------------------------------
+% Membrane flux:      m/s -> m/d          multiply by 86400
+% Membrane flux:      m/s -> L/m^2/h      multiply by 3.6e6
+% Biomass:            mg/L -> g/L         divide by 1000
+% Temperature:        K -> deg C          subtract 273.15
+%
+% EMPIRICAL MEMBRANE PRESSURE CORRELATION
+% -------------------------------------------------------------------------
+% Jcrit must be supplied in L/m^2/h.
+% X must be supplied in g/L.
+% ug must be supplied in m/s.
+% P and P0 must be supplied in Pa.
+% dPdt is calculated in Pa/d.
+%
+% MODEL ASSUMPTIONS
+% -------------------------------------------------------------------------
+% The reactor is perfectly mixed and operates at constant liquid volume.
+% The membrane operates at constant critical flux.
+% The sludge wasting concentration equals the reactor biomass concentration.
+% Biomass is completely retained by the membrane.
+% Dissolved oxygen in the feed is negligible.
+% Dissolved oxygen passes through the membrane into the permeate.
+% Atmospheric surface oxygen transfer is neglected.
+% Temperature varies seasonally.
+% Level-control dynamics are neglected.
+%
 % =========================================================================
 
 %% State establishment:
@@ -49,7 +99,7 @@ end
 %As stated in the brief the membranes are operated at a constant cricital
 %flux with TMP control
 
-Qp = Critical_Membrane_Flux * Membrane_Area;% as Qf = Qp + Qw we can thus calculate Qw
+Qp = Critical_Membrane_Flux * 86400 * Membrane_Area;% as Qf = Qp + Qw we can thus calculate Qw after converting critical membrane flux to mday^-1
 Qw = Feed_VolumetricFlowrate_t - Qp;
 if Qw < 0
     error('Permeate flow exceeds feed flow. Check membrane area');
@@ -58,7 +108,7 @@ end
 %Included seasonal temperature variations effect on meumax and consequently
 %meu
 Temperature = correlations.SeasonalTemperature(time);
-Growth.meuMax = correlations.meuMaxTemperature(Temperature);
+Growth.meu_max = correlations.MeuMaxTemperature(Temperature);
 Growth.S = S;
 meu = correlations.meu(Growth);
 
@@ -67,7 +117,7 @@ theta = correlations.HydraulicResidenceTime(Feed_VolumetricFlowrate_t,Volume);
 
 %% Dissolved Oxygen Parameters
 KLA = correlations.KLA(Gassing_Rate);
-Temperature_DegreesC = correlations.degrees2Kelvin(Temperature);
+Temperature_DegreesC = correlations.kelvin2Degrees(Temperature);
 O_star = correlations.SaturationoxygenConcentration(Temperature_DegreesC);
 
 
@@ -104,7 +154,9 @@ dOdt = KLA*(O_star - O) - (meu * X)/Growth.Yx_o - (Feed_VolumetricFlowrate_t*O)/
 %This finds out the required Transmembrane pressures in order to maintain a
 %constant critical flux with fouling accounted for. This is an empirical
 %relation taken from a pilot plant as stated in the brief.
-dPdt = 31.1 + 1.58 * Critical_Membrane_Flux + 30.2 * X - 1.74 * Gassing_Rate (P - P0);
+J_LMH = Critical_Membrane_Flux * 3.6e6;
+X_g_L = X / 1000;
+dPdt = 31.1 + 1.58 * J_LMH + 30.2 * X_g_L - 1.74 * Gassing_Rate * (P - P0);
 
 
 dstatedt = [dXdt; dSdt;dOdt; dPdt;];

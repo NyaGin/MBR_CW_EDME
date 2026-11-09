@@ -29,34 +29,35 @@ Growth.Ks = 1750;       % mg/L
 Growth.Yx_s = 0.55;     % mg/mg
 Growth.Yx_o = 0.7;      % mg/mg
 
-%Initial Temperatures for P0 calculation
-Temperature_initial = correlations.SeasonalTemperature(0);
-P0_initial = membrane.p0Darcy; %An initial value of P0 was used for the initial conditions of the startup this makes it so that it looks at membrane operation 
-% of a newly inputed MBR in a sense
-
-%Initial Conditions
-State0 = [50,600,3,P0_initial]; %[Initial biomass conc mgL^-1, CODinitial mgL^-1,Initial Dissolved Oxygen Conc mgL^-1,Initial Transmembrane pressure Pa ]
 
 %Time Span
 Timespan = [0 365];
 
 %Initial Parameters picked assumed to be 1 reactor for now
-Critical_Membrane_Flux = 
-Volume = 
-Feed_VolumetricFlowrate = 
-n_MembraneUnits = 10;
-Membrane_Area = 450 * n_MembraneUnits;
+Critical_Membrane_Flux_Litres = 28; %lm^-2h^-1
+Critical_Membrane_Flux = membrane.Lm_2h_1toms_1(Critical_Membrane_Flux_Litres); %Converting flux to ms^-1
+Volume = 175000; %m^3
+Feed_VolumetricFlowrate = 175000; %m^3
+n_MembraneUnits = 550;
+Membrane_Area = 450 * n_MembraneUnits; %m^2
+Gassing_Rate = 0.045;%ms^-1
+
+%Initial Temperatures for P0 calculation
+Temperature_initial = correlations.SeasonalTemperature(0);
+Purewater_Viscosity_Initial = correlations.purewaterViscosity(Temperature_initial);
+P0_initial = membrane.p0Darcy(Critical_Membrane_Flux, Purewater_Viscosity_Initial); %An initial value of P0 was used for the initial conditions of the startup this makes 
+% it so that it looks at membrane operation 
+% of a newly inputed MBR in a sense
+
+%Initial Conditions
+State0 = [50,600,3,P0_initial]; %[Initial biomass conc mgL^-1 , CODinitial mgL^-1 ,Initial Dissolved Oxygen Conc mgL^-1 ,Initial Transmembrane pressure Pa]
 
 %Solving the coupled ODEs for Biomass and Substrate concentration
 [Time,State] = ode45(@(Time,State) MBR_ODE_SEASONAL_TEMPERATURE_BIOMASSANDSUBSTRATE(Time, State,Growth, Membrane_Area, Critical_Membrane_Flux, Volume, Feed_VolumetricFlowrate,Gassing_Rate)...
                     , Timespan, State0);
 
-X = State(:,1);
-S = State(:,2);
-
 %plotting
+plotting.plotMBRStates(Time, State, 3);
 
-%oxygen
 
-%membrane TMP
 

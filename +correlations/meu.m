@@ -18,7 +18,6 @@ function meu = meu(Growth)
 %(meumax*S)/(Ks+S) - kd
 meumax = Growth.meu_max;
 S = Growth.S;
-X = Growth.X;
 kd = Growth.kd;
 Ks = Growth.Ks;
 meu = (meumax*S)/(Ks+S) - kd;
