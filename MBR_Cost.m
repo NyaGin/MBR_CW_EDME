@@ -22,9 +22,6 @@ Number_of_Membrane_units = fix(Membrane_Area/450) + 1; %Gives the number of requ
 %equal to their width to ensure adequate space for aeration and mixing. An
 %initial dimension calculation can be done based on the volume and the
 %footprint. 
-Width_Tank_Initial = Number_of_Membrane_units * 0.944 * 2 - 0.944;
-%As the height cannot exceed 25m for operational reasons there is a height
-%constraint check here in order to calculate the minimum number of units
-%required.
-Area_Tank_Base_Initial 
-Volumetric_Airflow = 
+Width_Tank = Number_of_Membrane_units * 0.944 * 2 - 0.944; %m
+Length_Tank = 2.19; %m
+ 
