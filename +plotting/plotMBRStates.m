@@ -26,9 +26,9 @@ tiledlayout(2,2);
 % Biomass concentration
 % -------------------------------------------------------------------------
 nexttile;
-plot(Time, X, 'LineWidth', 1.5);
+plot(Time, (X/1000), 'LineWidth', 1.5);
 xlabel('Time [days]');
-ylabel('Biomass [mg/L]');
+ylabel('Biomass [g/L]');
 title('Biomass Concentration');
 grid on;
 

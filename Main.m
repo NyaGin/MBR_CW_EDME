@@ -54,7 +54,7 @@ State0 = [50,600,3,P0_initial]; %[Initial biomass conc mgL^-1 , CODinitial mgL^-
 
 %Solving the coupled ODEs for Biomass and Substrate concentration
 [Time,State] = ode15s(@(Time,State) MBR_ODE_SEASONAL_TEMPERATURE_BIOMASSANDSUBSTRATE_NOFEEDCHANGE(Time, State,Growth, Critical_Membrane_Flux, Volume, Feed_VolumetricFlowrate,HRT,SRT,Gassing_Rate)...
-                    , Timespan, State0_edited);
+                    , Timespan, State0);
 %plotting
 plotting.plotMBRStates(Time, State, 3);
 
