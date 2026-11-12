@@ -135,7 +135,7 @@ dXdt = X * (meu - (Qw/Volume));
 dSdt = (1/theta)*(Sf-S) - (meu*X)/Growth.Yx_s;
 
 %Dissolved Oxygen Transient
-%This current model assumes thyat there are off
+%This current model assumes that there are off
 %gasses for now from the broth to the air. It also assumes that there is no
 %resistance to the oxygen dissolved in the broth as the broth moves through
 %the membrane onto the permeate side, in other words the permeate side
