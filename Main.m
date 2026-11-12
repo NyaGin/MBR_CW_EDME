@@ -50,13 +50,86 @@ P0_initial = membrane.p0Darcy(Critical_Membrane_Flux, Purewater_Viscosity_Initia
 % of a newly inputed MBR in a sense
 
 %Initial Conditions
-State0 = [50,600,3,P0_initial]; %[Initial biomass conc mgL^-1 , CODinitial mgL^-1 ,Initial Dissolved Oxygen Conc mgL^-1 ,Initial Transmembrane pressure Pa]
+State0 = [50,600,2,P0_initial]; %[Initial biomass conc mgL^-1 , CODinitial mgL^-1 ,Initial Dissolved Oxygen Conc mgL^-1 ,Initial Transmembrane pressure Pa]
 
 %Solving the coupled ODEs for Biomass and Substrate concentration
-[Time,State] = ode15s(@(Time,State) MBR_ODE_SEASONAL_TEMPERATURE_BIOMASSANDSUBSTRATE_NOFEEDCHANGE(Time, State,Growth, Critical_Membrane_Flux, Volume, Feed_VolumetricFlowrate,HRT,SRT,Gassing_Rate)...
+tic
+
+for k = 1:20
+    clear Time;
+    clear State;
+    [Time,State] = ode15s(@(Time,State) MBR_ODE_SEASONAL_TEMPERATURE_BIOMASSANDSUBSTRATE_NOFEEDCHANGE(Time, State,Growth, Critical_Membrane_Flux, Volume, Feed_VolumetricFlowrate,HRT,SRT,Gassing_Rate)...
                     , Timespan, State0);
+end
+average_Time = toc/20;
+fprintf('Average ODE15s runtime: %.4f seconds\n',average_Time);
+
 %plotting
-plotting.plotMBRStates(Time, State, 3);
+plotting.plotMBRStates(Time, State, 2);
+
+
+ODE = @(t,y) MBR_ODE_SEASONAL_TEMPERATURE_BIOMASSANDSUBSTRATE_NOFEEDCHANGE( ...
+    t, y, Growth, Critical_Membrane_Flux, Volume, ...
+    Feed_VolumetricFlowrate, HRT, SRT, Gassing_Rate);
+
+
+RelTols = [1e-3, 1e-5, 1e-7, 1e-9];
+AbsTols = [1e-6, 1e-8, 1e-10, 1e-12];
+
+nTests = numel(RelTols);
+
+% Preallocate Results
+% Columns:
+% 1 - Final biomass (g/L)
+% 2 - Final substrate (mg/L)
+% 3 - Minimum dissolved oxygen (mg/L)
+% 4 - Maximum TMP (bar)
+% 5 - Final simulation time (days)
+% 6 - Solver runtime (seconds)
+
+Results = zeros(nTests, 6);
+
+for k = 1:nTests
+
+    options = odeset( ...
+        'RelTol', RelTols(k), ...
+        'AbsTol', AbsTols(k));
+
+    tic;
+
+    [Time, State] = ode15s(ODE, Timespan, State0, options);
+
+    Runtime = toc;
+
+    % Extract results and convert units
+    Biomass_Final = State(end,1) / 1000;  % mg/L -> g/L
+    Substrate_Final = State(end,2);       % mg/L
+    Oxygen_Min = min(State(:,3));        % mg/L
+    TMP_Max = max(State(:,4)) / 1e5;     % Pa -> bar
+    Final_Time = Time(end);              % days
+
+    Results(k,:) = [ ...
+        Biomass_Final, ...
+        Substrate_Final, ...
+        Oxygen_Min, ...
+        TMP_Max, ...
+        Final_Time, ...
+        Runtime];
+
+end
+ResultsTable = array2table(Results, ...
+    'VariableNames', { ...
+        'Biomass_gL', ...
+        'Substrate_mgL', ...
+        'OxygenMin_mgL', ...
+        'TMPMax_bar', ...
+        'FinalTime_days', ...
+        'Runtime_s'}, ...
+    'RowNames', compose('RelTol_%.0e', RelTols));
+
+fprintf('\n========== ODE15s CONVERGENCE STUDY ==========\n');
+disp(ResultsTable);
+
 
 
 
