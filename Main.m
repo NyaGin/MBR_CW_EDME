@@ -29,7 +29,6 @@ Growth.Ks = 1750;       % mg/L
 Growth.Yx_s = 0.55;     % mg/mg
 Growth.Yx_o = 0.7;      % mg/mg
 
-
 %Time Span
 Timespan = [0 365];
 
