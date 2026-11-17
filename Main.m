@@ -29,7 +29,6 @@ Growth.Ks = 1750;       % mg/L
 Growth.Yx_s = 0.55;     % mg/mg
 Growth.Yx_o = 0.7;      % mg/mg
 
-
 %Time Span
 Timespan = [0 365];
 
@@ -56,8 +55,8 @@ State0 = [50,600,3,P0_initial]; %[Initial biomass conc mgL^-1 , CODinitial mgL^-
 [Time,State] = ode45(@(Time,State) MBR_ODE_SEASONAL_TEMPERATURE_BIOMASSANDSUBSTRATE(Time, State,Growth, Membrane_Area, Critical_Membrane_Flux, Volume, Feed_VolumetricFlowrate,Gassing_Rate)...
                     , Timespan, State0);
 
-[Time1,State1] = ode15s(@(Time1,State1) MBR_ODE_SEASONAL_TEMPERATURE_BIOMASSANDSUBSTRATE_NOFEEDCHANGE(Time1, State1,Growth, Critical_Membrane_Flux, Volume, Feed_VolumetricFlowrate,HRT,SRT,Gassing_Rate)...
-                    , Timespan, State0_edited);
+% [Time1,State1] = ode15s(@(Time1,State1) MBR_ODE_SEASONAL_TEMPERATURE_BIOMASSANDSUBSTRATE_NOFEEDCHANGE(Time1, State1,Growth, Critical_Membrane_Flux, Volume, Feed_VolumetricFlowrate,HRT,SRT,Gassing_Rate)...
+%                     , Timespan, State0_edited);
 %plotting
 plotting.plotMBRStates(Time, State, 3);
 
