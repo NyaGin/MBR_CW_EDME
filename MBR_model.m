@@ -7,10 +7,14 @@ Startup_days = P.Startup_days;
 LowerBound = P.LowerBound;
 UpperBound = P.UpperBound;
 
+% This is used to change the feed concentration during the sensitivity
+% analysis
+COD_factor = P.COD_factor;
+
 % Membrane base dimensions:
 L = 2.19;                   % m
 W = 0.944;                  % m 
-A = 0.994;                  % m - distance between the membrane and the long side of the reactor
+A = 0.944;                  % m - distance between the membrane and the long side of the reactor
 
 % ODE parameter and solution caches to prevent duplicate ODE solves
 X_cache = [];                                         % Cached current design parameter vector  
@@ -54,7 +58,7 @@ Purewater_Viscosity_Initial = correlations.purewaterViscosity(Temperature_initia
         State0 = [50, 600, 2, P0];
         
         % Solve the ODE with the given design and derived parameters
-        [Time,State] = ode15s(@(Time,State) MBR_ODE_SEASONAL_TEMPERATURE_BIOMASSANDSUBSTRATE_NOFEEDCHANGE(Time, State, Growth, Critical_Membrane_Flux_M, Volume, Feed_VolumetricFlowrate,HRT,SRT,Gassing_Rate)...
+        [Time,State] = ode15s(@(Time,State) MBR_ODE_SEASONAL_TEMPERATURE_BIOMASSANDSUBSTRATE_NOFEEDCHANGE(Time, State, Growth, Critical_Membrane_Flux_M, Volume, Feed_VolumetricFlowrate,HRT,SRT,Gassing_Rate, COD_factor)...
             , Timespan, State0, Options);
 
         %Verify the ODE solver completed the simulation
@@ -96,9 +100,10 @@ Purewater_Viscosity_Initial = correlations.purewaterViscosity(Temperature_initia
 
 
         % Store values needed in the Cost function
-        Results.Volume = Volume;
+        Results.Volume = Volume; % INCLUDING DESIGN FACTOR MAYBE 1.2X LIQUID VOLUME
+        Results.Tank_volume = 1 * Volume;
         Results.Tank_base = (2 * W * N_membrane + W) * (L + 2 * A);
-        Results.Tank_height = Volume/Results.Tank_base;
+        Results.Tank_height = Results.Tank_volume/Results.Tank_base;
         Results.Gassing_rate = Gassing_Rate;
         Results.Permeate_flow = Feed_VolumetricFlowrate * (1 - (HRT/SRT));
         Results.Waste_flow = Feed_VolumetricFlowrate * (HRT/SRT);
@@ -131,12 +136,12 @@ Purewater_Viscosity_Initial = correlations.purewaterViscosity(Temperature_initia
 
         C = [
             R.MaxTMP - 20000;
-            2 - R.MinDO;
-            R.MaxBiomass - 20000;
+            2.2 - R.MinDO; % 2
+            R.MaxBiomass - 18182; %20000
             R.MaxCOD - 100;
             16 - R.Critical_Membrane_Flux;
             R.Critical_Membrane_Flux - 30;
-            R.Tank_height - 25;
+            R.Tank_height - 22.73; %25 
             ];
         
         C_eq = [];
@@ -152,13 +157,13 @@ Purewater_Viscosity_Initial = correlations.purewaterViscosity(Temperature_initia
             Total_cost = 1000;
             return;
         end
-
+        
         % Calculating volumetric gassing rate 
         Volumetric_gassing_rate = R.Gassing_rate * R.Tank_base * 3600;
         
         % Calculating individual capital costs 
         C_membrane = 40 * (450 * N_membrane);
-        C_tank = 7500 + 800 * (R.Volume)^0.65;
+        C_tank = 7500 + 800 * (R.Tank_volume)^0.65;
         C_blower = 2900 + 38 * (Volumetric_gassing_rate)^0.8;
         C_waste_pump = 5300 + 159 * (R.Waste_flow * 1000/86400)^0.9;
         
