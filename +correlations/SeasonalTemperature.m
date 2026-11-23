@@ -1,4 +1,4 @@
-function Temperature = SeasonalTemperature(day);
+function Temperature = SeasonalTemperature(day)
 %Input: day Output: K
 %Using the seasonal temperature model in the brief to calculate the
 %temperature on a given day. Valid between 0 and 365

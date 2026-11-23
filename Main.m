@@ -33,7 +33,7 @@ Growth.Yx_o = 0.7;      % mg/mg
 Timespan = [0 365];
 
 %Initial Parameters picked assumed to be 1 reactor for now
-Critical_Membrane_Flux_Litres = 26;                                             %lm^-2h^-1
+Critical_Membrane_Flux_Litres = 18.798;                                             %lm^-2h^-1
 Critical_Membrane_Flux = membrane.Lm_2h_1toms_1(Critical_Membrane_Flux_Litres); %Converting flux to ms^-1
 Volume = 175000;                                                                %m^3
 Feed_VolumetricFlowrate = 175000;                                               %m^3

@@ -11,6 +11,7 @@ function P = MBR_initialise()
     P.Feed_VolumetricFlowrate = 175000;
     P.Timespan = [0, 365];
     P.Startup_days = 15;
+    P.COD_factor = 1; % This is the default value, can be subject to change during the sensitivity analysis 
 
     % Design parameter bounds: [Gassing rate, HRT, SRT]
     P.LowerBound = [0.015, 0.8, 15];

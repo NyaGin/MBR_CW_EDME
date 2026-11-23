@@ -1,4 +1,4 @@
-function dstatedt = MBR_ODE_SEASONAL_TEMPERATURE_BIOMASSANDSUBSTRATE_NOFEEDCHANGE(time, State, Growth, Critical_Membrane_Flux, Volume, Feed_VolumetricFlowrate,HRT,SRT,Gassing_Rate)
+function dstatedt = MBR_ODE_SEASONAL_TEMPERATURE_BIOMASSANDSUBSTRATE_NOFEEDCHANGE(time, State, Growth, Critical_Membrane_Flux, Volume, Feed_VolumetricFlowrate,HRT,SRT,Gassing_Rate, COD_factor)
 
 % =========================================================================
 % MBR DYNAMIC MODEL - PARAMETERS AND UNITS
@@ -88,11 +88,11 @@ P = State(4);
 %Assuming that it is a non leap year october starts on
 %Day 92 and the 31st of january is on day 214
 
-Sf = 600; %mgL^-1
+Sf = 600 * COD_factor; %mgL^-1
 Feed_VolumetricFlowrate_t = Feed_VolumetricFlowrate;
 
 if (time >= 92 && time < 215)
-    Sf = 1800; %mgL^-1
+    Sf = 1800 * COD_factor; %mgL^-1
 end
 
 %Wasting Flowrate calculated from SRT.
